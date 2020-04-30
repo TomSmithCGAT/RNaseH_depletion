@@ -63,7 +63,7 @@ def convertProbeToRNA(pool):
         outPool[RNAtype] = [eachSet, rawRNA, probeSet]
     return outPool
 def reverseComplement(seq):
-    basePool = {"A":"T","T":"A","C":"G","G":"C"}
+    basePool = {"A":"T","T":"A","C":"G","G":"C","U":"A"}
     out_seq = ""
     for e in seq:
         out_seq = basePool[e] + out_seq
@@ -84,7 +84,7 @@ def muscleAlignment(probeRNA_ID, probeRNA_seq, targetRNA_ID, targetRNA_seq):
     f.writelines([targetRNA_seq + os.linesep])
     f.close()
     os.system("chmod +x " + muscle_exe_PATH)
-    os.system(muscle_exe_PATH + " -in ./tmp.fa -out ./tmp.alignment.fa")
+    os.system("muscle -in ./tmp.fa -out ./tmp.alignment.fa")
     probe_target_alignment_list = readFASTA("./tmp.alignment.fa")
     os.system("rm -f ./tmp.fa ./tmp.alignment.fa")
     return probe_target_alignment_list

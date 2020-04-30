@@ -1,0 +1,26 @@
+# setup conda environment (download miniconda if conda not available on path)
+$ conda create --name py2 python=2.7
+$ conda activate py2
+$ conda install -y numpy
+$ conda install -y pandas
+$ conda install -y -c bioconda muscle
+$ conda install -y -c bioconda blast
+
+# Download input files and save in working directory
+# gencode transcripts file needs to be edited to make the fasta names shorter
+# ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_34/gencode.v34.transcripts.fa.gz
+$ sed 's/|.*//g' gencode.v34.transcripts.fa > gencode.v34.transcripts_short_names.fa
+
+# RNA central entry for human 18S rRNA
+# Download in fasta format and manually edit fasta name to URS0000726FAB_18S 
+# https://rnacentral.org/rna/URS0000726FAB/9606
+
+# Run scripts
+$ python 0.design_probe.py --input URS0000726FAB.fasta --output output_human_18S/probes
+
+$ python 2.predict_probe_offtarget.py --transcript gencode.v34.transcripts_short_names.fa --rRNA URS0000726FAB.fasta --probe output_human_18S/probes --output_prefix output_human_18S/offtarget 
+
+# Summarise the offtarget hits
+# All off target hits are rRNA pseudogenes or overlapping lncRNAs
+$ cat output_human_18S/offtarget.BLAST.tsv | cut -f2|sort|uniq -c
+

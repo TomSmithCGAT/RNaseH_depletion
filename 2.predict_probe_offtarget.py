@@ -83,6 +83,7 @@ parser.add_argument("-bn", "--blastn_path", type = str, default = "./bin/blastn"
                     help="Path to executable file of blastn (NCBI-BLAST) [default: ./bin/blastn]")
 parser.add_argument("-br", "--burst_path", type = str, default = "./bin/burst",
                     help="Path to executable file of burst [default: ./bin/burst]")
+parser.add_argument("--run_burst", action = 'store_true', help="Run burst")
 args = parser.parse_args()	
 
 path_transcript = args.transcript
@@ -93,6 +94,7 @@ format_probe = args.probe_format
 bin_makeblastdb = args.makeblastdb_path
 bin_blastn = args.blastn_path
 bin_burst = args.burst_path
+run_burst = args.run_burst
 
 os.system("chmod +x " + bin_makeblastdb)
 os.system("chmod +x " + bin_blastn)
@@ -105,17 +107,18 @@ else:
 	tsv2Fasta(path_probe, "./.tmp_offtarget_predict_RNaseH/probe.fa")
 
 os.system("cp " + path_transcript + " ./.tmp_offtarget_predict_RNaseH/target.ffn")
-os.system(bin_makeblastdb + " -in ./.tmp_offtarget_predict_RNaseH/target.ffn -dbtype nucl -parse_seqids " + \
-		"-out ./.tmp_offtarget_predict_RNaseH/target")
-os.system(bin_blastn + " -query ./.tmp_offtarget_predict_RNaseH/probe.fa -db ./.tmp_offtarget_predict_RNaseH/target " + \
-		"-outfmt \"7 qaccver saccver pident evalue bitscore qcovs length mismatch gapopen\" " + \
-		"-num_threads 4 -out ./.tmp_offtarget_predict_RNaseH/target.blast.out")
+os.system("makeblastdb -in ./.tmp_offtarget_predict_RNaseH/target.ffn -dbtype nucl -parse_seqids " + \
+	  "-out ./.tmp_offtarget_predict_RNaseH/target")
+os.system("blastn -query ./.tmp_offtarget_predict_RNaseH/probe.fa -db ./.tmp_offtarget_predict_RNaseH/target " + \
+	  "-outfmt \"7 qaccver saccver pident evalue bitscore qcovs length mismatch gapopen\" " + \
+	  "-num_threads 4 -out ./.tmp_offtarget_predict_RNaseH/target.blast.out")
 processBLASToutput("./.tmp_offtarget_predict_RNaseH/target.blast.out", \
-					path_rRNAref, path_outputP + ".BLAST.tsv")
+		   path_rRNAref, path_outputP + ".BLAST.tsv")
 
-os.system(bin_burst + " --references ./.tmp_offtarget_predict_RNaseH/target.ffn --queries " + \
-		"./.tmp_offtarget_predict_RNaseH/probe.fa -fr -i 0.80 -m FORAGE --threads 4 --output " + \
-		"./.tmp_offtarget_predict_RNaseH/target.burst.out")
-processBURSToutput("./.tmp_offtarget_predict_RNaseH/target.burst.out", \
-					 path_rRNAref, path_outputP + ".BURST.tsv")
-os.system("rm -rf ./.tmp_offtarget_predict_RNaseH")
+if run_burst:
+        os.system(bin_burst + " --references ./.tmp_offtarget_predict_RNaseH/target.ffn --queries " + \
+		  "./.tmp_offtarget_predict_RNaseH/probe.fa -fr -i 0.80 -m FORAGE --threads 4 --output " + \
+		  "./.tmp_offtarget_predict_RNaseH/target.burst.out")
+        processBURSToutput("./.tmp_offtarget_predict_RNaseH/target.burst.out", \
+			   path_rRNAref, path_outputP + ".BURST.tsv")
+        os.system("rm -rf ./.tmp_offtarget_predict_RNaseH")

@@ -28,7 +28,7 @@ def readFASTA(path):
     pool.append([tmpLabel, tmpSeq])
     return pool
 def reverseComplement(seq):
-    basePool = {"A":"T","T":"A","C":"G","G":"C"}
+    basePool = {"A":"T","T":"A","C":"G","G":"C","U":"A"}
     out_seq = ""
     for e in seq:
         out_seq = basePool[e] + out_seq
